@@ -1,4 +1,4 @@
-package block
+package blockchain
 
 //StoredData is the interface that abstracts the concrete struct each
 //block is storing
