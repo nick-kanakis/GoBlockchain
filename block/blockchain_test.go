@@ -2,9 +2,10 @@ package block
 
 import "testing"
 
-func TestNewBlockchain(t *testing.T){
+func TestNewBlockchain(t *testing.T) {
+	//adjust diff to be quite low (only 8 bits)
+	AdjustDifficulty(8)
 	blockchain := NewBlockchain()
-	
 	if blockchain == nil {
 		t.Fatal("Failed to create new blockchain")
 	}
@@ -14,16 +15,20 @@ func TestNewBlockchain(t *testing.T){
 	}
 }
 
-func TestAddBlock(t *testing.T){
+func TestAddBlock(t *testing.T) {
+	//adjust diff to be quite low (only 8 bits)
+	AdjustDifficulty(8)
+
 	blockchain := NewBlockchain()
-	
+
 	blockchain.AddBlock(&Bike{"TestSerialNumber"})
-	
+
 	if len(blockchain.blocks) != 2 {
 		t.Error("Failed to add new block")
 	}
-
-	if blockchain.blocks[len(blockchain.blocks) -1].Data.ToString() != "TestSerialNumber"{
+	lastBlockData := blockchain.blocks[len(blockchain.blocks)-1].Data.ToByteSlices()
+	lastBlockDataStr := string(lastBlockData[:])
+	if lastBlockDataStr != "TestSerialNumber" {
 		t.Error("New block was not added correctly")
 	}
 }
