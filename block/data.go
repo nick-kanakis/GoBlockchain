@@ -3,7 +3,7 @@ package block
 //StoredData is the interface that abstracts the concrete struct each
 //block is storing
 type StoredData interface {
-	ToString() string
+	ToByteSlices() []byte
 }
 
 //Bike is the underling struct that the blockchain is build around
@@ -13,8 +13,8 @@ type Bike struct {
 	SerialNumber string
 }
 
-//ToString returns a string direved from all Bike fields,
+//ToByteSlices returns a byte slice derived from all Bike fields,
 //for now we just return SerialNumber
-func (b *Bike) ToString() string {
-	return b.SerialNumber
+func (b *Bike) ToByteSlices() []byte {
+	return []byte(b.SerialNumber)
 }
