@@ -4,7 +4,7 @@ import "testing"
 
 func TestValidate(t *testing.T) {
 	AdjustDifficulty(8)
-	bike := Bike{"SN123545"}
+	bike := ConcreteData{"SN123545"}
 	block, _ := NewBlock(&bike, []byte("SN123544"))
 	pow := NewProofOfWork(block)
 

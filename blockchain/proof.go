@@ -54,7 +54,7 @@ func (pow *ProofOfWork) newHeaders(nonce uint) []byte {
 
 	return utils.ConcatByteSlices(
 		pow.block.PreviousBlockHash,
-		pow.block.Data.ToByteSlices(),
+		pow.block.Data.Serialize(),
 		utils.UintToByteSlice(uint64(pow.block.Timestamp)),
 		utils.UintToByteSlice(uint64(pow.block.TargetBits)),
 		utils.UintToByteSlice(uint64(nonce)),

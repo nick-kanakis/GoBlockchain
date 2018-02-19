@@ -1,20 +1,51 @@
 package blockchain
 
+import (
+	"bytes"
+	"encoding/gob"
+	"log"
+)
+
 //StoredData is the interface that abstracts the concrete struct each
 //block is storing
 type StoredData interface {
-	ToByteSlices() []byte
+	GetData() string
+	Serialize() []byte
 }
 
-//Bike is the underling struct that the blockchain is build around
-//at this point is only a string, in the future the Bike will get
+//ConcreteData is the underling struct that the blockchain is build around
+//at this point is only a string, in the future the ConcreteData will get
 //more complicated
-type Bike struct {
+type ConcreteData struct {
 	SerialNumber string
 }
 
-//ToByteSlices returns a byte slice derived from all Bike fields,
-//for now we just return SerialNumber
-func (b *Bike) ToByteSlices() []byte {
-	return []byte(b.SerialNumber)
+//GetData returns the underlying data
+func (b ConcreteData) GetData() string {
+	return b.SerialNumber
+}
+
+//Serialize implements the StoredData interface
+func (b ConcreteData) Serialize() []byte{
+	var buff bytes.Buffer
+	encoder := gob.NewEncoder(&buff)
+
+	err := encoder.Encode(b)
+	if err != nil {
+		log.Panicf("Could not serialize data error msg: %v", err)
+	}
+	return  buff.Bytes()
+}
+
+func DeserializeData(encodedData []byte) *ConcreteData{
+	var data ConcreteData
+	reader := bytes.NewReader(encodedData)
+	decoder := gob.NewDecoder(reader)
+	err := decoder.Decode(&data)
+
+	if err!=nil{
+		log.Panicf("Could not deserialize data error msg: %v", err)
+	}
+
+	return &data
 }
