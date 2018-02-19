@@ -33,15 +33,6 @@ func TestConcatByteSlicesSingleInputs(t *testing.T) {
 	}
 }
 
-func TestEpochToByteSlice(t *testing.T) {
-	var timestamp int64 = 1518973818
-	timestampToBytes := EpochToByteSlice(timestamp)
-
-	if "1518973818" != string(timestampToBytes[:]) {
-		t.Fatalf("Epoch time convertion fail result has: %v", timestampToBytes)
-	}
-}
-
 func TestUintToByteSlice(t *testing.T) {
 	slice := UintToByteSlice(1234)
 
