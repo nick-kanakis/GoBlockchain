@@ -1,6 +1,8 @@
 package blockchain
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"time"
 )
@@ -47,6 +49,30 @@ func NewBlock(data StoredData, prevBlockHash []byte) (*Block, error) {
 	block.Hash = hash
 	block.Nonce = nonce
 	return block, nil
+}
+
+//DeserializeBlock deseriaize a block from a byte slice
+func DeserializeBlock(encodedBlock []byte) *Block {
+	var block Block
+	reader := bytes.NewReader(encodedBlock)
+	decoder := gob.NewDecoder(reader)
+	decoder.Decode(&block)
+
+	return &block
+}
+
+//Serialize serialize the block to a slice
+func (b *Block) Serialize() []byte {
+	var buff bytes.Buffer
+	gob.Register(ConcreteData{})
+	encoder := gob.NewEncoder(&buff)
+	err := encoder.Encode(b)
+
+	if err != nil {
+		log.Panicf("Could not serialize block error msg: %v", err)
+	}
+
+	return buff.Bytes()
 }
 
 //AdjustDifficulty set the difficulty of creating a new block

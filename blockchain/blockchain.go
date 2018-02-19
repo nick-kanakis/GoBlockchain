@@ -28,7 +28,7 @@ func NewBlockchain() *Blockchain {
 }
 
 func generateGenesisBlock() *Block {
-	block, err := NewBlock(&Bike{"InitialSerialNumber"}, []byte{})
+	block, err := NewBlock(&ConcreteData{"InitialSerialNumber"}, []byte{})
 
 	if err != nil {
 		log.Panicf("Could not incorporate genesis block into blockchain")
