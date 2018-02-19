@@ -37,6 +37,7 @@ func (b ConcreteData) Serialize() []byte{
 	return  buff.Bytes()
 }
 
+//DeserializeData given a serialized CocreteData returns the deserialized struct
 func DeserializeData(encodedData []byte) *ConcreteData{
 	var data ConcreteData
 	reader := bytes.NewReader(encodedData)
