@@ -16,6 +16,7 @@ type FSManager interface {
 }
 
 const extension = "dat"
+const blocksFilePath = "blockfiles"
 
 var ErrSavingBlock = errors.New("Could not save block from filesystem")
 var ErrRetrievingBlock = errors.New("Could not retrieve block from filesystem")
@@ -24,15 +25,19 @@ type fsManager struct {
 	path string
 }
 
-//New returns new instance of Manager interface
-func New(path string) FSManager {
+//NewFSManager returns new instance of FSManager
+func NewFSManager() FSManager {
+	return newFSManager(blocksFilePath)
+}
+
+func newFSManager(path string) FSManager {
 	return &fsManager{path}
 }
 
 //LoadBlock given a block file name ("block" + height) retrieves the serialized
 //block instance
 func (m *fsManager) LoadBlock(filename string) ([]byte, error) {
-	path, _ := filepath.Abs("../../" + m.path)
+	path, _ := filepath.Abs("/" + m.path)
 	content, err := ioutil.ReadFile(path + "/" + filename + "." + extension)
 	if err != nil {
 		log.Panicf("Could not retrieve block from disk, msg: %v\n", err)
@@ -44,7 +49,7 @@ func (m *fsManager) LoadBlock(filename string) ([]byte, error) {
 
 //SaveBlock given the serialized block  and the height, stores it to the disk
 func (m *fsManager) SaveBlock(block []byte, height int) (string, error) {
-	path, _ := filepath.Abs("../../" + m.path)
+	path, _ := filepath.Abs("/" + m.path)
 	os.MkdirAll(path, os.ModePerm)
 	err := ioutil.WriteFile(path+"/block"+strconv.Itoa(height)+"."+extension, block, 0644)
 
