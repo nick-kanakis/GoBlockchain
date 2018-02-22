@@ -18,7 +18,10 @@ type FSManager interface {
 const extension = "dat"
 const blocksFilePath = "blockfiles"
 
+//ErrSavingBlock error when saving raw block to filesystem
 var ErrSavingBlock = errors.New("Could not save block from filesystem")
+
+//ErrRetrievingBlock error when retrieving raw block from filesystem
 var ErrRetrievingBlock = errors.New("Could not retrieve block from filesystem")
 
 type fsManager struct {

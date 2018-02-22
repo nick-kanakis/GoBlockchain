@@ -12,9 +12,9 @@ const lastHashBucketName = "lasthash"
 
 //DBManager provides the list of operations for communicating with the DB.
 type DBManager interface {
-	SaveBlock(hash []byte, blockMetadata *BlockMetadata) error
+	SaveBlockMetadata(hash []byte, blockMetadata *BlockMetadata) error
 	RetrieveBlockPathByHash(hash []byte) string
-	LastUsedHash() []byte
+	lastUsedHash() []byte
 	CloseDb()
 }
 
@@ -38,14 +38,14 @@ func newDBManager(dbName string) DBManager {
 	}
 }
 
-/*SaveBlock is responsible for storing block's metadata to DB.
+/*SaveBlockMetadata is responsible for storing block's metadata to DB.
 There 2 buckets used in the DB:
 	1)	Key = block hash
 		Value = metadata of block (currently height of block and path in the filesystem)
 	2)	Key = "lastUsedHash"
 		Value = last inserted block hash
 */
-func (m *dbManager) SaveBlock(hash []byte, blockMetadata *BlockMetadata) error {
+func (m *dbManager) SaveBlockMetadata(hash []byte, blockMetadata *BlockMetadata) error {
 
 	m.db.Update(func(tx *bolt.Tx) error {
 		blockBucket, err := tx.CreateBucketIfNotExists([]byte(blockBucketName))
@@ -92,7 +92,7 @@ func (m *dbManager) RetrieveBlockPathByHash(hash []byte) string {
 
 //LastUsedHash returns the hash of the last stored block.
 //The information is stored into "lasthash" bucket
-func (m *dbManager) LastUsedHash() []byte {
+func (m *dbManager) lastUsedHash() []byte {
 	var hash []byte
 	m.db.View(func(tx *bolt.Tx) error {
 		lastHashBucket := tx.Bucket([]byte(lastHashBucketName))

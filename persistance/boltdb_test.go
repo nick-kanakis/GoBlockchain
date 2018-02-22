@@ -5,10 +5,10 @@ import (
 	"testing"
 )
 
-func TestSaveBlock(t *testing.T) {
+func TestSaveBlockMetadata(t *testing.T) {
 	dbManager := newDBManager("test.db")
 	defer dbManager.CloseDb()
-	err := dbManager.SaveBlock([]byte("1234"), &BlockMetadata{1, "/test/testblock1.dat"})
+	err := dbManager.SaveBlockMetadata([]byte("1234"), &BlockMetadata{1, "/test/testblock1.dat"})
 	if err != nil {
 		t.Error("Could not save block to DB")
 	}
@@ -24,10 +24,10 @@ func TestRetrieveBlockPathByHash(t *testing.T) {
 	}
 }
 
-func TestLastUsedHash(t *testing.T) {
+func TestLastUsedHashDB(t *testing.T) {
 	dbManager := newDBManager("test.db")
 	defer dbManager.CloseDb()
-	lastHash := dbManager.LastUsedHash()
+	lastHash := dbManager.lastUsedHash()
 
 	if "1234" != string(lastHash[:]) {
 		t.Error("Could not retrieve lash blocks hash from DB")
