@@ -26,10 +26,11 @@ type Block struct {
 	Hash              []byte
 	TargetBits        uint
 	Nonce             uint
+	Height			  int
 }
 
 //NewBlock creates a new block based on the previous block.
-func NewBlock(data StoredData, prevBlockHash []byte) (*Block, error) {
+func NewBlock(data StoredData, prevBlockHash []byte, previousHeight int) (*Block, error) {
 	block := &Block{
 		Timestamp:         time.Now().Unix(),
 		Data:              data,
@@ -37,6 +38,7 @@ func NewBlock(data StoredData, prevBlockHash []byte) (*Block, error) {
 		Hash:              []byte{},
 		TargetBits:        difficulty,
 		Nonce:             0,
+		Height:			 previousHeight + 1,
 	}
 	pow := NewProofOfWork(block)
 	nonce, hash, err := pow.DoWork()
