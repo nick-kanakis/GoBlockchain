@@ -4,20 +4,20 @@ import (
 	"testing"
 )
 
-func TestSaveBlock(t *testing.T){
+func TestSaveBlock(t *testing.T) {
 	mockedPersistanceManager := newPersistanceManager(&mockedDB{}, &mockedFS{})
-	
+
 	err := mockedPersistanceManager.SaveBlock([]byte{}, []byte{}, &BlockMetadata{1, ""})
-	if err!=nil{
+	if err != nil {
 		t.Error("Could not save block metadata")
 	}
 }
 
-func TestRetrieveBlockByHash(t *testing.T){
+func TestRetrieveBlockByHash(t *testing.T) {
 	mockedPersistanceManager := newPersistanceManager(&mockedDB{}, &mockedFS{})
-	hash, err :=mockedPersistanceManager.RetrieveBlockByHash([]byte{})
+	hash, err := mockedPersistanceManager.RetrieveBlockByHash([]byte{})
 
-	if err!=nil{
+	if err != nil {
 		t.Error("Could not load hash")
 	}
 
@@ -26,17 +26,16 @@ func TestRetrieveBlockByHash(t *testing.T){
 	}
 }
 
-func TestLastUsedHash(t *testing.T){
+func TestLastUsedHash(t *testing.T) {
 	mockedPersistanceManager := newPersistanceManager(&mockedDB{}, &mockedFS{})
 	hash := mockedPersistanceManager.LastUsedHash()
-	
+
 	if "1234" != string(hash[:]) {
 		t.Error("Could not correct hash value")
 	}
 }
 
-type mockedDB struct {}
-
+type mockedDB struct{}
 
 func (m *mockedDB) SaveBlockMetadata(hash []byte, blockMetadata *BlockMetadata) error {
 	return nil
@@ -52,7 +51,7 @@ func (m *mockedDB) lastUsedHash() []byte {
 
 func (m *mockedDB) CloseDb() {}
 
-type mockedFS struct {}
+type mockedFS struct{}
 
 func (m *mockedFS) LoadBlock(filename string) ([]byte, error) {
 	return []byte("mocked block"), nil

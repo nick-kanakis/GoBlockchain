@@ -33,26 +33,23 @@ func NewPersistanceManager() Manager {
 	return newPersistanceManager(database, filesystem)
 }
 
-
 func newPersistanceManager(database DBManager, filesystem FSManager) Manager {
 	var once sync.Once
 	var instance Manager
-/*
-These should be only one instance of Manager, since  Bolt obtains a file lock on the data file 
-so multiple processes cannot open the same database at the same time. 
-Opening an already open Bolt database will cause it to hang until the other process closes it
-*/
-	once.Do( func() {
+	/*
+	   These should be only one instance of Manager, since  Bolt obtains a file lock on the data file
+	   so multiple processes cannot open the same database at the same time.
+	   Opening an already open Bolt database will cause it to hang until the other process closes it
+	*/
+	once.Do(func() {
 		instance = &manager{
-		db: database,
-		fs: filesystem,
-	}
+			db: database,
+			fs: filesystem,
+		}
 
-})
-return instance
+	})
+	return instance
 }
-
-
 
 //SaveBlock is responsible for persisting a block to filesystem & storing the metadata to DB.
 func (m *manager) SaveBlock(hash []byte, serializedBlock []byte, blockMetadata *BlockMetadata) error {
