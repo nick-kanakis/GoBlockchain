@@ -3,14 +3,13 @@ package blockchain
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
 )
 
 //StoredData is the interface that abstracts the concrete struct each
 //block is storing
 type StoredData interface {
 	GetData() string
-	Serialize() []byte
+	Serialize() ([]byte, error)
 }
 
 //ConcreteData is the underling struct that the blockchain is build around
@@ -26,27 +25,26 @@ func (b ConcreteData) GetData() string {
 }
 
 //Serialize implements the StoredData interface
-func (b ConcreteData) Serialize() []byte{
+func (b ConcreteData) Serialize() ([]byte, error) {
 	var buff bytes.Buffer
 	encoder := gob.NewEncoder(&buff)
 
 	err := encoder.Encode(b)
 	if err != nil {
-		log.Panicf("Could not serialize data error msg: %v", err)
+		return nil, err
 	}
-	return  buff.Bytes()
+	return buff.Bytes(), nil
 }
 
 //DeserializeData given a serialized CocreteData returns the deserialized struct
-func DeserializeData(encodedData []byte) *ConcreteData{
+func DeserializeData(encodedData []byte) (*ConcreteData, error) {
 	var data ConcreteData
 	reader := bytes.NewReader(encodedData)
 	decoder := gob.NewDecoder(reader)
 	err := decoder.Decode(&data)
-
-	if err!=nil{
-		log.Panicf("Could not deserialize data error msg: %v", err)
+	if err != nil {
+		return nil, err
 	}
 
-	return &data
+	return &data, nil
 }

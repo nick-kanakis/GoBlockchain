@@ -3,7 +3,6 @@ package blockchain
 import (
 	"crypto/sha256"
 	"errors"
-	"log"
 	"math"
 	"math/big"
 	"personal/GoBlockchain/utils"
@@ -50,15 +49,18 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 - current nonce
 The header will be used for next iteration of work
 */
-func (pow *ProofOfWork) newHeaders(nonce uint) []byte {
-
+func (pow *ProofOfWork) newHeaders(nonce uint) ([]byte, error) {
+	serializedData, err := pow.block.Data.Serialize()
+	if err != nil {
+		return nil, err
+	}
 	return utils.ConcatByteSlices(
 		pow.block.PreviousBlockHash,
-		pow.block.Data.Serialize(),
+		serializedData,
 		utils.UintToByteSlice(uint64(pow.block.Timestamp)),
 		utils.UintToByteSlice(uint64(pow.block.TargetBits)),
 		utils.UintToByteSlice(uint64(nonce)),
-	)
+	), nil
 }
 
 /*DoWork is the function that does the work needed to add the block into the blockchain,
@@ -74,9 +76,11 @@ func (pow *ProofOfWork) DoWork() (uint, []byte, error) {
 	var nonce uint
 
 	for nonce = 0; nonce < maxNonce; nonce++ {
-		headers := pow.newHeaders(nonce)
+		headers, err := pow.newHeaders(nonce)
+		if err != nil {
+			return 0, nil, err
+		}
 		hash = sha256.Sum256(headers)
-
 		currentHash.SetBytes(hash[:])
 
 		//currentHash < target
@@ -85,7 +89,6 @@ func (pow *ProofOfWork) DoWork() (uint, []byte, error) {
 		}
 	}
 
-	log.Panicf("Nonce exceed math.MaxInt64, block %v did not entered the blockchain ", pow.block.Data)
 	return 0, []byte{}, ErrFailedBlock
 }
 
@@ -93,7 +96,12 @@ func (pow *ProofOfWork) DoWork() (uint, []byte, error) {
 //to be part of the block
 func (pow *ProofOfWork) Validate() bool {
 	var bigHash big.Int
-	headers := pow.newHeaders(pow.block.Nonce)
+	headers, err := pow.newHeaders(pow.block.Nonce)
+
+	if err != nil {
+		return false
+	}
+
 	hash := sha256.Sum256(headers)
 	bigHash.SetBytes(hash[:])
 

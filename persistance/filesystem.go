@@ -1,9 +1,7 @@
 package persistance
 
 import (
-	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -17,12 +15,6 @@ type FSManager interface {
 
 const extension = "dat"
 const blocksFilePath = "blockfiles"
-
-//ErrSavingBlock error when saving raw block to filesystem
-var ErrSavingBlock = errors.New("Could not save block from filesystem")
-
-//ErrRetrievingBlock error when retrieving raw block from filesystem
-var ErrRetrievingBlock = errors.New("Could not retrieve block from filesystem")
 
 type fsManager struct {
 	path string
@@ -43,8 +35,7 @@ func (m *fsManager) LoadBlock(filename string) ([]byte, error) {
 	path, _ := filepath.Abs("/" + m.path)
 	content, err := ioutil.ReadFile(path + "/" + filename + "." + extension)
 	if err != nil {
-		log.Panicf("Could not retrieve block from disk, msg: %v\n", err)
-		return nil, ErrRetrievingBlock
+		return nil, err
 	}
 
 	return content, nil
@@ -57,8 +48,7 @@ func (m *fsManager) SaveBlock(block []byte, height int) (string, error) {
 	err := ioutil.WriteFile(path+"/block"+strconv.Itoa(height)+"."+extension, block, 0644)
 
 	if err != nil {
-		log.Panicf("Could not store block to disk, msg: %v\n", err)
-		return "", ErrSavingBlock
+		return "", err
 	}
 
 	return "block" + strconv.Itoa(height), nil

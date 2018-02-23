@@ -41,15 +41,15 @@ func (m *mockedDB) SaveBlockMetadata(hash []byte, blockMetadata *BlockMetadata) 
 	return nil
 }
 
-func (m *mockedDB) RetrieveBlockPathByHash(hash []byte) string {
-	return "/block1234.dat"
+func (m *mockedDB) RetrieveBlockPathByHash(hash []byte) (string, error) {
+	return "/block1234.dat", nil
 }
 
 func (m *mockedDB) lastUsedHash() []byte {
 	return []byte("1234")
 }
 
-func (m *mockedDB) CloseDb() {}
+func (m *mockedDB) CloseDb() error { return nil }
 
 type mockedFS struct{}
 

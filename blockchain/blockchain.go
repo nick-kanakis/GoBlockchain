@@ -8,49 +8,59 @@ import (
 //Blockchain is a chain of Block type, in this chain we can only add new blocks
 //old blocks can not be altered
 type Blockchain struct {
-	persistanceManager persistance.Manager 
+	persistanceManager persistance.Manager
 }
 
 //AddBlock add a new Block to the blockchain
 func (bc *Blockchain) AddBlock(data StoredData) error {
 	lastBlock, err := getPreviousHashHeight(bc.persistanceManager)
-	if err !=nil{
-		log.Println("Could not fetch block from db")
+	if err != nil {
 		return err
 	}
 	newBlock, err := NewBlock(data, lastBlock.Hash, lastBlock.Height)
 	if err != nil {
-		log.Printf("Could not incorporate block %v into blockchain\n", newBlock.Data)
 		return err
 	}
-	newBlockMetadata:= generateBlockMetadata(newBlock)
-	bc.persistanceManager.SaveBlock(newBlock.Hash, newBlock.Serialize(), newBlockMetadata)
-	
+	newBlockMetadata := generateBlockMetadata(newBlock)
+	serializedData, err := newBlock.Serialize()
+	if err != nil {
+		return err
+	}
+	bc.persistanceManager.SaveBlock(newBlock.Hash, serializedData, newBlockMetadata)
+
 	return nil
 }
+
 //Retrieve previous Block
-func getPreviousHashHeight(pm persistance.Manager) (*Block, error){
+func getPreviousHashHeight(pm persistance.Manager) (*Block, error) {
 	lastHash := pm.LastUsedHash()
 	serializedBlock, err := pm.RetrieveBlockByHash(lastHash)
-	
-	if err != nil{
+
+	if err != nil {
 		return nil, err
 	}
-	block := DeserializeBlock(serializedBlock)
+	block, err := DeserializeBlock(serializedBlock)
+	if err != nil {
+		return nil, err
+	}
 
 	return block, nil
 }
 
-func generateBlockMetadata(block *Block) *persistance.BlockMetadata{
+func generateBlockMetadata(block *Block) *persistance.BlockMetadata {
 	return &persistance.BlockMetadata{block.Height, ""}
 }
 
 //NewBlockchain returns a new Blockchain including the genesis block
-func NewBlockchain(pm persistance.Manager) *Blockchain {
-	genesisBlock:=generateGenesisBlock()
-	metadata:= generateBlockMetadata(genesisBlock)
-	pm.SaveBlock(genesisBlock.Hash, genesisBlock.Serialize(), metadata)
-	return &Blockchain{pm}
+func NewBlockchain(pm persistance.Manager) (*Blockchain, error) {
+	genesisBlock := generateGenesisBlock()
+	metadata := generateBlockMetadata(genesisBlock)
+	genesisData, err := genesisBlock.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	pm.SaveBlock(genesisBlock.Hash, genesisData, metadata)
+	return &Blockchain{pm}, nil
 }
 
 func generateGenesisBlock() *Block {

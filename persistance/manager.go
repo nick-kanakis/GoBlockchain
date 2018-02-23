@@ -17,7 +17,7 @@ type Manager interface {
 	SaveBlock(hash []byte, serializedBlock []byte, blockMetadata *BlockMetadata) error
 	RetrieveBlockByHash(hash []byte) ([]byte, error)
 	LastUsedHash() []byte
-	ClosePersistanceManager()
+	ClosePersistanceManager() error
 }
 
 type manager struct {
@@ -73,7 +73,11 @@ First retrieves the metadata from the database, from the metadata retrieve the
 file path and retrieve from the filesystem the raw block
 */
 func (m *manager) RetrieveBlockByHash(hash []byte) ([]byte, error) {
-	path := m.db.RetrieveBlockPathByHash(hash)
+	path, err := m.db.RetrieveBlockPathByHash(hash)
+	if err != nil {
+		return nil, err
+	}
+
 	block, err := m.fs.LoadBlock(path)
 	if err != nil {
 		return nil, err
@@ -88,6 +92,6 @@ func (m *manager) LastUsedHash() []byte {
 }
 
 //ClosePersistanceManager close any remaining connection
-func (m *manager) ClosePersistanceManager() {
-	m.db.CloseDb()
+func (m *manager) ClosePersistanceManager() error {
+	return m.db.CloseDb()
 }

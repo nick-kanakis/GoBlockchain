@@ -13,9 +13,9 @@ const lastHashBucketName = "lasthash"
 //DBManager provides the list of operations for communicating with the DB.
 type DBManager interface {
 	SaveBlockMetadata(hash []byte, blockMetadata *BlockMetadata) error
-	RetrieveBlockPathByHash(hash []byte) string
+	RetrieveBlockPathByHash(hash []byte) (string, error)
 	lastUsedHash() []byte
-	CloseDb()
+	CloseDb() error
 }
 
 type dbManager struct {
@@ -76,18 +76,21 @@ func (m *dbManager) SaveBlockMetadata(hash []byte, blockMetadata *BlockMetadata)
 
 //RetrieveBlockByHash is used to fetch the block path on the disk
 //given a it's hash value.
-func (m *dbManager) RetrieveBlockPathByHash(hash []byte) string {
-	var path string
+func (m *dbManager) RetrieveBlockPathByHash(hash []byte) (string, error) {
+	var metadataJSON []byte
+	var metadata BlockMetadata
 	m.db.View(func(tx *bolt.Tx) error {
 		blockBucket := tx.Bucket([]byte(blockBucketName))
-
-		metadataJSON := blockBucket.Get(hash)
-		var metadata BlockMetadata
-		json.Unmarshal(metadataJSON, &metadata)
-		path = metadata.Path
+		metadataJSON = blockBucket.Get(hash)
 		return nil
 	})
-	return path
+
+	err := json.Unmarshal(metadataJSON, &metadata)
+	if err != nil {
+		return "", err
+	}
+	path := metadata.Path
+	return path, nil
 }
 
 //LastUsedHash returns the hash of the last stored block.
@@ -96,13 +99,12 @@ func (m *dbManager) lastUsedHash() []byte {
 	var hash []byte
 	m.db.View(func(tx *bolt.Tx) error {
 		lastHashBucket := tx.Bucket([]byte(lastHashBucketName))
-
 		hash = lastHashBucket.Get([]byte("lastUsedHash"))
 		return nil
 	})
 	return hash
 }
 
-func (m *dbManager) CloseDb() {
-	m.db.Close()
+func (m *dbManager) CloseDb() error {
+	return m.db.Close()
 }

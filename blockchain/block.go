@@ -3,7 +3,6 @@ package blockchain
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
 	"time"
 )
 
@@ -26,7 +25,7 @@ type Block struct {
 	Hash              []byte
 	TargetBits        uint
 	Nonce             uint
-	Height			  int
+	Height            int
 }
 
 //NewBlock creates a new block based on the previous block.
@@ -38,13 +37,12 @@ func NewBlock(data StoredData, prevBlockHash []byte, previousHeight int) (*Block
 		Hash:              []byte{},
 		TargetBits:        difficulty,
 		Nonce:             0,
-		Height:			 previousHeight + 1,
+		Height:            previousHeight + 1,
 	}
 	pow := NewProofOfWork(block)
 	nonce, hash, err := pow.DoWork()
 
 	if err != nil {
-		log.Panicf("Could not incorporate block %v into blockchain", block.Data)
 		return nil, err
 	}
 
@@ -54,27 +52,29 @@ func NewBlock(data StoredData, prevBlockHash []byte, previousHeight int) (*Block
 }
 
 //DeserializeBlock deseriaize a block from a byte slice
-func DeserializeBlock(encodedBlock []byte) *Block {
+func DeserializeBlock(encodedBlock []byte) (*Block, error) {
 	var block Block
 	reader := bytes.NewReader(encodedBlock)
 	decoder := gob.NewDecoder(reader)
-	decoder.Decode(&block)
-
-	return &block
+	err := decoder.Decode(&block)
+	if err != nil {
+		return nil, err
+	}
+	return &block, nil
 }
 
 //Serialize serialize the block to a slice
-func (b *Block) Serialize() []byte {
+func (b *Block) Serialize() ([]byte, error) {
 	var buff bytes.Buffer
 	gob.Register(ConcreteData{})
 	encoder := gob.NewEncoder(&buff)
 	err := encoder.Encode(b)
 
 	if err != nil {
-		log.Panicf("Could not serialize block error msg: %v", err)
+		return nil, err
 	}
 
-	return buff.Bytes()
+	return buff.Bytes(), nil
 }
 
 //AdjustDifficulty set the difficulty of creating a new block

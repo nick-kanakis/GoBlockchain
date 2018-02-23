@@ -17,8 +17,11 @@ func TestSaveBlockMetadata(t *testing.T) {
 func TestRetrieveBlockPathByHash(t *testing.T) {
 	dbManager := newDBManager("test.db")
 	defer dbManager.CloseDb()
-	returnedPath := dbManager.RetrieveBlockPathByHash([]byte("1234"))
+	returnedPath, err := dbManager.RetrieveBlockPathByHash([]byte("1234"))
 
+	if err != nil {
+		t.Errorf("Could not retrieve block path error message: %v", err)
+	}
 	if "/test/testblock1.dat" != returnedPath {
 		t.Error("Could not retrieve block path from DB")
 	}
