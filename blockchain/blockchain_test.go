@@ -1,17 +1,21 @@
 package blockchain
 
-import "testing"
+import (
+	"testing"
+	"personal/GoBlockchain/persistance"
+)
 
 func TestNewBlockchain(t *testing.T) {
 	//adjust diff to be quite low (only 8 bits)
 	AdjustDifficulty(8)
-	blockchain := NewBlockchain()
+	blockchain := NewBlockchain(&fakePersistanceManager{})
+	
 	if blockchain == nil {
 		t.Fatal("Failed to create new blockchain")
 	}
 
-	if len(blockchain.blocks) != 1 {
-		t.Error("Failed to add genesis block")
+	if blockchain.persistanceManager == nil {
+		t.Error("Failed to create new blockchain")
 	}
 }
 
@@ -19,15 +23,29 @@ func TestAddBlock(t *testing.T) {
 	//adjust diff to be quite low (only 8 bits)
 	AdjustDifficulty(8)
 
-	blockchain := NewBlockchain()
+	blockchain := NewBlockchain(&fakePersistanceManager{})
 
-	blockchain.AddBlock(&ConcreteData{"TestSerialNumber"})
+	err:= blockchain.AddBlock(&ConcreteData{"TestSerialNumber"})
 
-	if len(blockchain.blocks) != 2 {
+	if err !=nil {
 		t.Error("Failed to add new block")
 	}
-	lastBlockDataStr := blockchain.blocks[len(blockchain.blocks)-1].Data.GetData()
-	if lastBlockDataStr != "TestSerialNumber" {
-		t.Error("New block was not added correctly")
-	}
 }
+
+
+type fakePersistanceManager struct{}
+
+func (m *fakePersistanceManager) SaveBlock(hash []byte, serializedBlock []byte, blockMetadata *persistance.BlockMetadata) error {
+
+	return nil
+}
+
+func (m *fakePersistanceManager) RetrieveBlockByHash(hash []byte) ([]byte, error) {
+	return []byte("Block"), nil
+}
+
+func (m *fakePersistanceManager) LastUsedHash() []byte {
+	return []byte("testHash")
+}
+
+func (m *fakePersistanceManager) ClosePersistanceManager() {}
