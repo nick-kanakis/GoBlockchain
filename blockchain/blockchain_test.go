@@ -37,6 +37,23 @@ func TestAddBlock(t *testing.T) {
 	}
 }
 
+func TestNewBlockchainIterator(t *testing.T) {
+	AdjustDifficulty(8)
+	blockchain, err := NewBlockchain(&fakePersistanceManager{})
+	if err != nil {
+		t.Errorf("Could not create new Blockchain error msg: %v", err)
+	}
+	iter := blockchain.NewBlockchainIterator()
+	previousBlock, err := iter.Next()
+	if err != nil {
+		t.Errorf("Could not iterate previous block error msg: %v", err)
+	}
+
+	if previousBlock.Data == nil {
+		t.Errorf("Iteration failed previous block has corrupted data error msg: %v", err)
+	}
+}
+
 type fakePersistanceManager struct{}
 
 func (m *fakePersistanceManager) SaveBlock(hash []byte, serializedBlock []byte, blockMetadata *persistance.BlockMetadata) error {

@@ -73,3 +73,11 @@ func generateGenesisBlock() *Block {
 
 	return block
 }
+
+//NewBlockchainIterator returns a BlockchainIterator, the iteration is being done from newset to oldest block
+func (bc *Blockchain) NewBlockchainIterator()*BlockchainIterator{
+	return &BlockchainIterator{
+		currentHash: bc.persistanceManager.LastUsedHash(),
+		manager: bc.persistanceManager,
+	}
+}
