@@ -7,7 +7,6 @@ import (
 
 func TestNewBlock(t *testing.T) {
 	//adjust diff to be quite low (only 8 bits)
-	AdjustDifficulty(8)
 	data := []byte("testData")
 	block, err := NewBlock(data, generateFakeBlock())
 	if err != nil {
@@ -21,9 +20,11 @@ func TestNewBlock(t *testing.T) {
 }
 
 func TestSerializeDeserializeBlock(t *testing.T) {
-	AdjustDifficulty(8)
 	data := []byte("testData")
-	block, _ := NewBlock(data, generateFakeBlock())
+	block, err := NewBlock(data, generateFakeBlock())
+	if err != nil {
+		t.Errorf("Could not create new block err msg: %v", err)
+	}
 	serializedBlock, err := block.Serialize()
 	if err != nil {
 		t.Errorf("Could not create new block err msg: %v", err)
@@ -38,6 +39,25 @@ func TestSerializeDeserializeBlock(t *testing.T) {
 	if "testData" != datastr {
 		t.Errorf("Serialization/Deserialization failed result was: %v", datastr)
 	}
+}
+
+func TestAdjustedDifficulty(t *testing.T){
+	data := []byte("testData")
+	block, err := NewBlock(data, generateFakeBlock())
+	if err != nil {
+		t.Errorf("Could not create new block err msg: %v", err)
+	}
+	for i:=0; i<difficultyAdjustmentInterval+1; i++{
+		block, err = NewBlock(data, block)
+		if err != nil {
+			t.Errorf("Could not create new block err msg: %v", err)
+		}
+	}
+
+	if block.TargetBits == 8{
+		t.Error("Target bits should have been increased")
+	}
+
 }
 
 func generateFakeBlock() *Block{

@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
-//This need to be dynamically adjusted
-//Currently it has 24 bits or 3 bytes
-var difficulty uint = 24
+//How often a block should be created (in sec)
+const blockGenerationInterval = 10
+//How often the should the difficulty be adjusted (in blocks)
+const difficultyAdjustmentInterval = 5
 
 //Block represents the block of the chain it is composed by the following:
 //Timestamp: the time (in Unix time) that the block was created
@@ -30,6 +31,7 @@ type Block struct {
 
 //NewBlock creates a new block based on the previous block.
 func NewBlock(data []byte, previousBlock *Block) (*Block, error) {
+	difficulty:=getDifficulty(previousBlock)
 	block := &Block{
 		Timestamp:         time.Now().Unix(),
 		Data:      data,
@@ -41,7 +43,6 @@ func NewBlock(data []byte, previousBlock *Block) (*Block, error) {
 	}
 	pow := NewProofOfWork(block)
 	nonce, hash, err := pow.DoWork()
-
 	if err != nil {
 		return nil, err
 	}
@@ -53,12 +54,13 @@ func NewBlock(data []byte, previousBlock *Block) (*Block, error) {
 
 //NewGenesisBlock generates the first block in the blockchain
 func NewGenesisBlock(data []byte) (*Block, error) {
+	initialDifficulty := uint(8)
 	block := &Block{
 		Timestamp:         time.Now().Unix(),
 		Data:      		   data,
 		PreviousBlockHash: []byte{},
 		Hash:              []byte{},
-		TargetBits:        difficulty,
+		TargetBits:        initialDifficulty,
 		Nonce:             0,
 		Height:            0,
 	}
@@ -99,7 +101,22 @@ func (b *Block) Serialize() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-//AdjustDifficulty set the difficulty of creating a new block
-func AdjustDifficulty(diff uint) {
-	difficulty = diff
+//getDifficulty returns the difficulty of the block
+//check if difficulty needs to change
+func getDifficulty(lastBlock *Block) uint {
+	//is it time to adjust the difficulty?
+	if lastBlock.Height% difficultyAdjustmentInterval ==0 && lastBlock.Height!=0{
+		return getAdjustedDifficulty(lastBlock)
+	}
+	return lastBlock.TargetBits
+}
+
+func getAdjustedDifficulty(lastBlock *Block) uint {
+	timediff:= lastBlock.Timestamp - time.Now().Unix()
+	if timediff > blockGenerationInterval{
+		return lastBlock.TargetBits - 8	
+	} else if timediff < blockGenerationInterval{
+		return lastBlock.TargetBits + 8
+	}
+	return lastBlock.TargetBits
 }

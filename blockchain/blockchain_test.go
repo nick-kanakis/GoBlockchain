@@ -7,8 +7,6 @@ import (
 )
 
 func TestNewBlockchain(t *testing.T) {
-	//adjust diff to be quite low (only 8 bits)
-	AdjustDifficulty(8)
 	blockchain, err := NewBlockchain("testAddress",&fakePersistanceManager{})
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
@@ -23,9 +21,6 @@ func TestNewBlockchain(t *testing.T) {
 }
 
 func TestAddBlock(t *testing.T) {
-	//adjust diff to be quite low (only 8 bits)
-	AdjustDifficulty(8)
-
 	blockchain, err := NewBlockchain("testAddress",&fakePersistanceManager{})
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
@@ -38,7 +33,6 @@ func TestAddBlock(t *testing.T) {
 }
 
 func TestNewBlockchainIterator(t *testing.T) {
-	AdjustDifficulty(8)
 	blockchain, err := NewBlockchain("testAddress",&fakePersistanceManager{})
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)

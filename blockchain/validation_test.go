@@ -4,7 +4,6 @@ import (
 	"testing"
 )
 func TestValidateBlock(t *testing.T) {
-	AdjustDifficulty(8)
 	previousBlock, err := NewBlock([]byte("testData"), generateFakeBlock())
 	currentBlock, err := NewBlock([]byte("testData2"),  previousBlock)
 	if err != nil {
