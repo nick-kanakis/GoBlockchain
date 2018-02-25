@@ -43,7 +43,7 @@ func TestNewBlockchainIterator(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
 	}
-	iter := blockchain.NewBlockchainIterator()
+	iter := blockchain.NewIterator()
 	previousBlock, err := iter.Next()
 	if err != nil {
 		t.Errorf("Could not iterate previous block error msg: %v", err)
