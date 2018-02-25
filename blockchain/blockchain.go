@@ -5,6 +5,8 @@ import (
 	"personal/GoBlockchain/persistance"
 )
 
+const initialData = "Genesis block was generated"
+
 //Blockchain is a chain of Block type, in this chain we can only add new blocks
 //old blocks can not be altered
 type Blockchain struct {
@@ -12,12 +14,12 @@ type Blockchain struct {
 }
 
 //AddBlock add a new Block to the blockchain
-func (bc *Blockchain) AddBlock(data StoredData) error {
-	lastBlock, err := getPreviousHashHeight(bc.persistanceManager)
+func (bc *Blockchain) AddBlock(data []byte) error {
+	lastBlock, err := getPreviousBlock(bc.persistanceManager)
 	if err != nil {
 		return err
 	}
-	newBlock, err := NewBlock(data, lastBlock.Hash, lastBlock.Height)
+	newBlock, err := NewBlock(data, lastBlock)
 	if err != nil {
 		return err
 	}
@@ -32,7 +34,7 @@ func (bc *Blockchain) AddBlock(data StoredData) error {
 }
 
 //Retrieve previous Block
-func getPreviousHashHeight(pm persistance.Manager) (*Block, error) {
+func getPreviousBlock(pm persistance.Manager) (*Block, error) {
 	lastHash := pm.LastUsedHash()
 	serializedBlock, err := pm.RetrieveBlockByHash(lastHash)
 
@@ -52,8 +54,8 @@ func generateBlockMetadata(block *Block) *persistance.BlockMetadata {
 }
 
 //NewBlockchain returns a new Blockchain including the genesis block
-func NewBlockchain(pm persistance.Manager) (*Blockchain, error) {
-	genesisBlock := generateGenesisBlock()
+func NewBlockchain(address string, pm persistance.Manager) (*Blockchain, error) {
+	genesisBlock := generateGenesisBlock(address)
 	metadata := generateBlockMetadata(genesisBlock)
 	genesisData, err := genesisBlock.Serialize()
 	if err != nil {
@@ -63,8 +65,8 @@ func NewBlockchain(pm persistance.Manager) (*Blockchain, error) {
 	return &Blockchain{pm}, nil
 }
 
-func generateGenesisBlock() *Block {
-	block, err := NewBlock(&ConcreteData{"InitialSerialNumber"}, []byte{}, -1)
+func generateGenesisBlock(address string) *Block {
+	block, err := NewGenesisBlock([]byte(initialData))
 
 	if err != nil {
 		log.Panicf("Could not incorporate genesis block into blockchain")

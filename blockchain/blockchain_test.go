@@ -9,7 +9,7 @@ import (
 func TestNewBlockchain(t *testing.T) {
 	//adjust diff to be quite low (only 8 bits)
 	AdjustDifficulty(8)
-	blockchain, err := NewBlockchain(&fakePersistanceManager{})
+	blockchain, err := NewBlockchain("testAddress",&fakePersistanceManager{})
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
 	}
@@ -26,12 +26,12 @@ func TestAddBlock(t *testing.T) {
 	//adjust diff to be quite low (only 8 bits)
 	AdjustDifficulty(8)
 
-	blockchain, err := NewBlockchain(&fakePersistanceManager{})
+	blockchain, err := NewBlockchain("testAddress",&fakePersistanceManager{})
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
 	}
 
-	err = blockchain.AddBlock(&ConcreteData{"TestSerialNumber"})
+	err = blockchain.AddBlock([]byte("TestSerialNumber"))
 	if err != nil {
 		t.Errorf("Failed to add new block error msg: %v", err)
 	}
@@ -39,7 +39,7 @@ func TestAddBlock(t *testing.T) {
 
 func TestNewBlockchainIterator(t *testing.T) {
 	AdjustDifficulty(8)
-	blockchain, err := NewBlockchain(&fakePersistanceManager{})
+	blockchain, err := NewBlockchain("testAddress",&fakePersistanceManager{})
 	if err != nil {
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
 	}
@@ -63,7 +63,7 @@ func (m *fakePersistanceManager) SaveBlock(hash []byte, serializedBlock []byte, 
 func (m *fakePersistanceManager) RetrieveBlockByHash(hash []byte) ([]byte, error) {
 	block := Block{
 		Timestamp:         time.Now().Unix(),
-		Data:              &ConcreteData{"test"},
+		Data:              []byte("testData"),
 		PreviousBlockHash: []byte("1234"),
 		Hash:              []byte{},
 		TargetBits:        8,

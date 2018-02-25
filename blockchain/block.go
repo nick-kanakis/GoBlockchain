@@ -20,7 +20,7 @@ var difficulty uint = 24
 //nonce: number of tries it took for this block to enter the blockchain
 type Block struct {
 	Timestamp         int64
-	Data              StoredData
+	Data      []byte
 	PreviousBlockHash []byte
 	Hash              []byte
 	TargetBits        uint
@@ -29,15 +29,38 @@ type Block struct {
 }
 
 //NewBlock creates a new block based on the previous block.
-func NewBlock(data StoredData, prevBlockHash []byte, previousHeight int) (*Block, error) {
+func NewBlock(data []byte, previousBlock *Block) (*Block, error) {
 	block := &Block{
 		Timestamp:         time.Now().Unix(),
-		Data:              data,
-		PreviousBlockHash: prevBlockHash,
+		Data:      data,
+		PreviousBlockHash: previousBlock.Hash,
 		Hash:              []byte{},
 		TargetBits:        difficulty,
 		Nonce:             0,
-		Height:            previousHeight + 1,
+		Height:            previousBlock.Height + 1,
+	}
+	pow := NewProofOfWork(block)
+	nonce, hash, err := pow.DoWork()
+
+	if err != nil {
+		return nil, err
+	}
+
+	block.Hash = hash
+	block.Nonce = nonce
+	return block, nil
+}
+
+//NewGenesisBlock generates the first block in the blockchain
+func NewGenesisBlock(data []byte) (*Block, error) {
+	block := &Block{
+		Timestamp:         time.Now().Unix(),
+		Data:      		   data,
+		PreviousBlockHash: []byte{},
+		Hash:              []byte{},
+		TargetBits:        difficulty,
+		Nonce:             0,
+		Height:            0,
 	}
 	pow := NewProofOfWork(block)
 	nonce, hash, err := pow.DoWork()
@@ -66,7 +89,6 @@ func DeserializeBlock(encodedBlock []byte) (*Block, error) {
 //Serialize serialize the block to a slice
 func (b *Block) Serialize() ([]byte, error) {
 	var buff bytes.Buffer
-	gob.Register(ConcreteData{})
 	encoder := gob.NewEncoder(&buff)
 	err := encoder.Encode(b)
 
