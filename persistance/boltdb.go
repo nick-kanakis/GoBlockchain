@@ -2,13 +2,13 @@ package persistance
 
 import (
 	"encoding/json"
-	"github.com/coreos/bbolt"
 	"log"
+	"github.com/coreos/bbolt"
 )
 
 const dbName = "blockchain.db"
-const blockBucketName = "blocks"
-const lastHashBucketName = "lasthash"
+const blockBucketName = "blocksBucket"
+const lastHashBucketName = "lastHashBucket"
 
 //DBManager provides the list of operations for communicating with the DB.
 type DBManager interface {
@@ -99,6 +99,9 @@ func (m *dbManager) lastUsedHash() []byte {
 	var hash []byte
 	m.db.View(func(tx *bolt.Tx) error {
 		lastHashBucket := tx.Bucket([]byte(lastHashBucketName))
+		if lastHashBucket == nil {
+			return nil
+		}
 		hash = lastHashBucket.Get([]byte("lastUsedHash"))
 		return nil
 	})
