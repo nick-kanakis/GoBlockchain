@@ -7,11 +7,10 @@ import (
 
 //ValidateBlock validates that the current block:
 //1)has done work do be inserted in the blockchain
-//2)previous hash is the same as the current value of previousBlockHash
+//2)next olderst bock hash is the same as the current value of previousBlockHash
 //3)the height diff from previous block is 1
-func ValidateBlock(last, current *Block) bool{
-	
-	if validateBlockHash(current) && validateHash(last, current) && validateHeight(last, current){
+func ValidateBlock(oldest, newest *Block) bool{	
+	if validateBlockHash(newest) && validateHash(oldest, newest) && validateHeight(oldest, newest){
 		return true
 	}
 	return false
@@ -32,20 +31,20 @@ func validateBlockHash(block *Block) bool {
 	return false
 }
 
-func validateHash(last, current *Block) bool{
-	var lastHash, previousHash big.Int
+func validateHash(oldest, newest *Block) bool{
+	var referenceHash, currentHash big.Int
 
-	lastHash.SetBytes(current.PreviousBlockHash)
-	previousHash.SetBytes(last.Hash)
+	referenceHash.SetBytes(newest.PreviousBlockHash)
+	currentHash.SetBytes(oldest.Hash)
 
-	if lastHash.Cmp(&previousHash) != 0{
+	if currentHash.Cmp(&referenceHash) != 0{
 		return false
 	}
 	return true
 }
 
-func validateHeight(last, current *Block) bool{
-	if last.Height + 1 == current.Height{
+func validateHeight(oldest, newest *Block) bool{
+	if oldest.Height + 1 == newest.Height{
 		return true
 	}
 	return false
