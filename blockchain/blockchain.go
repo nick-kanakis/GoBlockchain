@@ -3,6 +3,7 @@ package blockchain
 import (
 	"log"
 	"personal/GoBlockchain/persistance"
+	"fmt"
 )
 
 const initialData = "Genesis block was generated"
@@ -54,18 +55,21 @@ func generateBlockMetadata(block *Block) *persistance.BlockMetadata {
 }
 
 //NewBlockchain returns a new Blockchain including the genesis block
-func NewBlockchain(address string, pm persistance.Manager) (*Blockchain, error) {
-	genesisBlock := generateGenesisBlock(address)
-	metadata := generateBlockMetadata(genesisBlock)
-	genesisData, err := genesisBlock.Serialize()
-	if err != nil {
-		return nil, err
+func NewBlockchain(pm persistance.Manager) (*Blockchain, error) {
+	lastUsedHash:= pm.LastUsedHash()
+	if len(lastUsedHash) == 0{
+		genesisBlock := generateGenesisBlock()
+		metadata := generateBlockMetadata(genesisBlock)
+		genesisData, err := genesisBlock.Serialize()
+		if err != nil {
+			return nil, err
+		}
+		pm.SaveBlock(genesisBlock.Hash, genesisData, metadata)
 	}
-	pm.SaveBlock(genesisBlock.Hash, genesisData, metadata)
 	return &Blockchain{pm}, nil
 }
 
-func generateGenesisBlock(address string) *Block {
+func generateGenesisBlock() *Block {
 	block, err := NewGenesisBlock([]byte(initialData))
 
 	if err != nil {
@@ -83,4 +87,43 @@ func (bc *Blockchain) NewIterator()*Iterator{
 		currentHash: bc.persistanceManager.LastUsedHash(),
 		manager: bc.persistanceManager,
 	}
+}
+
+func (bc *Blockchain) PrintChain() error{
+	iter := bc.NewIterator()
+	block, err := iter.Next()
+	
+	for block != nil{
+		if err != nil{
+			return err
+		}
+		fmt.Println(block)
+		block, err = iter.Next()
+	}
+	return nil
+}
+
+var validate = ValidateBlock
+//ValidateChain validates that each block in the chain
+//is a valid block and is in a valid position
+func (bc *Blockchain) ValidateChain() bool{
+	iter := bc.NewIterator()
+	newest, err := iter.Next()
+	if err != nil{
+		return false
+	}
+	oldest, err := iter.Next()
+	
+	for oldest != nil{
+		if err != nil{
+			return false
+		}
+
+		if !validate(oldest, newest){
+			return false
+		}
+		newest = oldest
+		oldest, err = iter.Next()
+	}
+	return true
 }
