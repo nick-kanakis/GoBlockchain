@@ -8,6 +8,7 @@ import (
 
 //How often a block should be created (in sec)
 const blockGenerationInterval = 10
+
 //How often the should the difficulty be adjusted (in blocks)
 const difficultyAdjustmentInterval = 5
 
@@ -21,7 +22,7 @@ const difficultyAdjustmentInterval = 5
 //nonce: number of tries it took for this block to enter the blockchain
 type Block struct {
 	Timestamp         int64
-	Data      []byte
+	Data              []byte
 	PreviousBlockHash []byte
 	Hash              []byte
 	TargetBits        uint
@@ -31,10 +32,10 @@ type Block struct {
 
 //NewBlock creates a new block based on the previous block.
 func NewBlock(data []byte, previousBlock *Block) (*Block, error) {
-	difficulty:=getDifficulty(previousBlock)
+	difficulty := getDifficulty(previousBlock)
 	block := &Block{
 		Timestamp:         time.Now().Unix(),
-		Data:      data,
+		Data:              data,
 		PreviousBlockHash: previousBlock.Hash,
 		Hash:              []byte{},
 		TargetBits:        difficulty,
@@ -57,7 +58,7 @@ func NewGenesisBlock(data []byte) (*Block, error) {
 	initialDifficulty := uint(8)
 	block := &Block{
 		Timestamp:         time.Now().Unix(),
-		Data:      		   data,
+		Data:              data,
 		PreviousBlockHash: []byte{},
 		Hash:              []byte{},
 		TargetBits:        initialDifficulty,
@@ -102,20 +103,24 @@ func (b *Block) Serialize() ([]byte, error) {
 }
 
 //getDifficulty returns the difficulty of the block
-//check if difficulty needs to change
+//The difficulty is recalculated over time in order to fit the 
+//difficultyAdjustmentInterval & blockGenerationInterval restrictions
 func getDifficulty(lastBlock *Block) uint {
 	//is it time to adjust the difficulty?
-	if lastBlock.Height% difficultyAdjustmentInterval ==0 && lastBlock.Height!=0{
+	if lastBlock.Height%difficultyAdjustmentInterval == 0 && lastBlock.Height != 0 {
 		return getAdjustedDifficulty(lastBlock)
 	}
 	return lastBlock.TargetBits
 }
 
+//getAdjustedDifficulty calculates the new difficulty
+//increase/decrease by 8 bits (1 byte) the targetBits taking into consideration
+//the time till the last block generation
 func getAdjustedDifficulty(lastBlock *Block) uint {
-	timediff:= lastBlock.Timestamp - time.Now().Unix()
-	if timediff > blockGenerationInterval{
-		return lastBlock.TargetBits - 8	
-	} else if timediff < blockGenerationInterval{
+	timediff := lastBlock.Timestamp - time.Now().Unix()
+	if timediff > blockGenerationInterval {
+		return lastBlock.TargetBits - 8
+	} else if timediff < blockGenerationInterval {
 		return lastBlock.TargetBits + 8
 	}
 	return lastBlock.TargetBits

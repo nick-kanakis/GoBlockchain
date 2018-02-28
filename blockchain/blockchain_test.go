@@ -47,13 +47,14 @@ func TestNewBlockchainIterator(t *testing.T) {
 		t.Errorf("Iteration failed previous block has corrupted data error msg: %v", err)
 	}
 }
+
 // validate will return false to avoid infinite loop
 //the propose of the test in not the validation of 2 blocks.
-func TestValidateChain(t *testing.T){
+func TestValidateChain(t *testing.T) {
 	oldValidateFunc := validate
 	validate = func(b1, b2 *Block) bool {
-		 return false
-		}
+		return false
+	}
 
 	defer func() {
 		validate = oldValidateFunc
@@ -64,10 +65,11 @@ func TestValidateChain(t *testing.T){
 		t.Errorf("Could not create new Blockchain error msg: %v", err)
 	}
 
-	if blockchain.ValidateChain(){
+	if blockchain.ValidateChain() {
 		t.Errorf("Validation of chain failed")
 	}
 }
+
 type fakePersistanceManager struct{}
 
 func (m *fakePersistanceManager) SaveBlock(hash []byte, serializedBlock []byte, blockMetadata *persistance.BlockMetadata) error {

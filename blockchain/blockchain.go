@@ -1,9 +1,9 @@
 package blockchain
 
 import (
+	"fmt"
 	"log"
 	"personal/GoBlockchain/persistance"
-	"fmt"
 )
 
 const initialData = "Genesis block was generated"
@@ -51,13 +51,16 @@ func getPreviousBlock(pm persistance.Manager) (*Block, error) {
 }
 
 func generateBlockMetadata(block *Block) *persistance.BlockMetadata {
-	return &persistance.BlockMetadata{block.Height, ""}
+	return &persistance.BlockMetadata{
+		Height: block.Height,
+		Path:   ""}
 }
 
-//NewBlockchain returns a new Blockchain including the genesis block
+//NewBlockchain returns a new Blockchain including the genesis block if
+//the genesis block has not been created already
 func NewBlockchain(pm persistance.Manager) (*Blockchain, error) {
-	lastUsedHash:= pm.LastUsedHash()
-	if len(lastUsedHash) == 0{
+	lastUsedHash := pm.LastUsedHash()
+	if len(lastUsedHash) == 0 {
 		genesisBlock := generateGenesisBlock()
 		metadata := generateBlockMetadata(genesisBlock)
 		genesisData, err := genesisBlock.Serialize()
@@ -74,27 +77,26 @@ func generateGenesisBlock() *Block {
 
 	if err != nil {
 		log.Panicf("Could not incorporate genesis block into blockchain")
-		return nil
 	}
 
 	return block
 }
 
 //NewIterator returns a blockchain Iterator,
-//the iteration is being done from newset to oldest block
-func (bc *Blockchain) NewIterator()*Iterator{
+//the iteration is being done from newset to oldest (by time of insertion) block
+func (bc *Blockchain) NewIterator() *Iterator {
 	return &Iterator{
 		currentHash: bc.persistanceManager.LastUsedHash(),
-		manager: bc.persistanceManager,
+		manager:     bc.persistanceManager,
 	}
 }
 
-func (bc *Blockchain) PrintChain() error{
+func (bc *Blockchain) PrintChain() error {
 	iter := bc.NewIterator()
 	block, err := iter.Next()
-	
-	for block != nil{
-		if err != nil{
+
+	for block != nil {
+		if err != nil {
 			return err
 		}
 		fmt.Println(block)
@@ -104,22 +106,25 @@ func (bc *Blockchain) PrintChain() error{
 }
 
 var validate = ValidateBlock
+
 //ValidateChain validates that each block in the chain
 //is a valid block and is in a valid position
-func (bc *Blockchain) ValidateChain() bool{
+func (bc *Blockchain) ValidateChain() bool {
 	iter := bc.NewIterator()
 	newest, err := iter.Next()
-	if err != nil{
+	if err != nil {
+		log.Printf("Validation of chain failed message: %v", err)
 		return false
 	}
 	oldest, err := iter.Next()
-	
-	for oldest != nil{
-		if err != nil{
+
+	for oldest != nil {
+		if err != nil {
+			log.Printf("Validation of chain failed message: %v", err)
 			return false
 		}
 
-		if !validate(oldest, newest){
+		if !validate(oldest, newest) {
 			return false
 		}
 		newest = oldest

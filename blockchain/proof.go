@@ -12,8 +12,8 @@ import (
 var ErrFailedBlock = errors.New("Failed to incorporate block into blockchain")
 
 /*ProofOfWork defines the work that has to be done in order for
-a new block to enter the blockchain. It has a Block pointer that refer to the
-new block we want to add to the blockchain, also it has a target string.
+a new block to enter the blockchain. It contains a Block pointer that refer to the
+new block we want to add to the blockchain, also it has a target big integer.
 target is used as the upper bound of the work that is needed to be done, more on that
 in the Run() method.
 */
@@ -72,7 +72,7 @@ func (pow *ProofOfWork) DoWork() (uint, []byte, error) {
 	var nonce uint
 
 	for nonce = 0; nonce < maxNonce; nonce++ {
-		headers:= pow.newHeaders(nonce)
+		headers := pow.newHeaders(nonce)
 
 		hash = sha256.Sum256(headers)
 		currentHash.SetBytes(hash[:])
@@ -85,5 +85,3 @@ func (pow *ProofOfWork) DoWork() (uint, []byte, error) {
 
 	return 0, []byte{}, ErrFailedBlock
 }
-
-
