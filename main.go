@@ -2,7 +2,7 @@ package main
 
 import "personal/GoBlockchain/api"
 
-func main(){
+func main() {
 	cli := api.CLI{}
 	cli.Run()
 }

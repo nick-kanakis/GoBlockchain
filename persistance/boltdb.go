@@ -2,8 +2,8 @@ package persistance
 
 import (
 	"encoding/json"
-	"log"
 	"github.com/coreos/bbolt"
+	"log"
 )
 
 const dbName = "blockchain.db"
