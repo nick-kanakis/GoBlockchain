@@ -3,6 +3,7 @@ package blockchain
 import (
 	"fmt"
 	"log"
+	"encoding/hex"
 	"personal/GoBlockchain/persistance"
 )
 
@@ -99,7 +100,13 @@ func (bc *Blockchain) PrintChain() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(block)
+
+		fmt.Println("###################################")
+		fmt.Printf("Height: %v\n", block.Height)
+		fmt.Printf("Time: %v\n", block.Timestamp)
+		fmt.Printf("Hash: %v\n", hex.EncodeToString(block.Hash))
+		fmt.Printf("Data: %v\n", string(block.Data))
+
 		block, err = iter.Next()
 	}
 	return nil
